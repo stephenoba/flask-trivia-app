@@ -20,6 +20,12 @@ npm install
 
 The frontend app was built using create-react-app. In order to run the app in development mode use `npm start`. You can change the script in the `package.json` file.
 
+Create a ```.env``` file in the frontend root directory, that is
+```frontend/.env``` and within the file add the line 
+```REACT_APP_BASE_URL=http://127.0.0.1:5000``` you can change the
+```REACT_APP_BASE_URL``` to fit your backend url and port if you aren't
+using the default.
+
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser. The page will reload if you make edits.
 
 ```bash
