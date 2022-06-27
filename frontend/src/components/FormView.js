@@ -5,6 +5,7 @@ import '../stylesheets/FormView.css';
 class FormView extends Component {
   constructor(props) {
     super();
+    this.base_uri = 'http://127.0.0.1:5000';
     this.state = {
       question: '',
       answer: '',
@@ -16,7 +17,7 @@ class FormView extends Component {
 
   componentDidMount() {
     $.ajax({
-      url: `${process.env.REACT_APP_BASE_URL}/categories`, //TODO: update request URL
+      url: `${this.base_uri}/categories`, //TODO: update request URL
       type: 'GET',
       success: (result) => {
         this.setState({ categories: result.categories });
@@ -32,7 +33,7 @@ class FormView extends Component {
   submitQuestion = (event) => {
     event.preventDefault();
     $.ajax({
-      url: `${process.env.REACT_APP_BASE_URL}/questions`, //TODO: update request URL
+      url: `${this.base_uri}/questions`, //TODO: update request URL
       type: 'POST',
       dataType: 'json',
       contentType: 'application/json',

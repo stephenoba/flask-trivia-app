@@ -7,6 +7,7 @@ import $ from 'jquery';
 class QuestionView extends Component {
   constructor() {
     super();
+    this.base_uri = 'http://127.0.0.1:5000';
     this.state = {
       questions: [],
       page: 1,
@@ -22,7 +23,7 @@ class QuestionView extends Component {
 
   getQuestions = () => {
     $.ajax({
-      url: `${process.env.REACT_APP_BASE_URL}/questions?page=${this.state.page}`, //TODO: update request URL
+      url: `${this.base_uri}/questions?page=${this.state.page}`, //TODO: update request URL
       type: 'GET',
       success: (result) => {
         this.setState({
@@ -65,7 +66,7 @@ class QuestionView extends Component {
 
   getByCategory = (id) => {
     $.ajax({
-      url: `${process.env.REACT_APP_BASE_URL}/categories/${id}/questions`, //TODO: update request URL
+      url: `${this.base_uri}/categories/${id}/questions`, //TODO: update request URL
       type: 'GET',
       success: (result) => {
         this.setState({
@@ -87,7 +88,7 @@ class QuestionView extends Component {
 
   submitSearch = (searchTerm) => {
     $.ajax({
-      url: `${process.env.REACT_APP_BASE_URL}/questions`, //TODO: update request URL
+      url: `${this.base_uri}/questions`, //TODO: update request URL
       type: 'POST',
       dataType: 'json',
       contentType: 'application/json',
@@ -115,7 +116,7 @@ class QuestionView extends Component {
     if (action === 'DELETE') {
       if (window.confirm('are you sure you want to delete the question?')) {
         $.ajax({
-          url: `${process.env.REACT_APP_BASE_URL}/questions/${id}`, //TODO: update request URL
+          url: `${this.base_uri}/questions/${id}`, //TODO: update request URL
           type: 'DELETE',
           success: (result) => {
             this.getQuestions();

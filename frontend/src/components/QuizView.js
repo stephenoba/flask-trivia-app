@@ -7,6 +7,7 @@ const questionsPerPlay = 5;
 class QuizView extends Component {
   constructor(props) {
     super();
+    this.base_uri = 'http://127.0.0.1:5000';
     this.state = {
       quizCategory: null,
       previousQuestions: [],
@@ -21,7 +22,7 @@ class QuizView extends Component {
 
   componentDidMount() {
     $.ajax({
-      url: `${process.env.REACT_APP_BASE_URL}/categories`, //TODO: update request URL
+      url: `${this.base_uri}/categories`, //TODO: update request URL
       type: 'GET',
       success: (result) => {
         this.setState({ categories: result.categories });
@@ -49,7 +50,7 @@ class QuizView extends Component {
     }
 
     $.ajax({
-      url: `${process.env.REACT_APP_BASE_URL}/quizzes`, //TODO: update request URL
+      url: `${this.base_uri}/quizzes`, //TODO: update request URL
       type: 'POST',
       dataType: 'json',
       contentType: 'application/json',
