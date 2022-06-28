@@ -281,7 +281,10 @@ def create_app(test_config=None):
             quiz_category = body.get("quiz_category")["id"]
             print(quiz_category)
             category = Category.query.filter(Category.id == quiz_category).one_or_none()
-            questions_query = Question.query.filter(Question.category == category.id)
+            if category:
+                questions_query = Question.query.filter(Question.category == category.id)
+            else:
+                questions_query = Question.query.filter()
 
             if previous_questions:
                 next_question = questions_query.filter(Question.id.notin_(previous_questions)).first()
@@ -303,6 +306,14 @@ def create_app(test_config=None):
     Create error handlers for all expected errors
     including 404 and 422.
     """
+    @app.errorhandler(500)
+    def server_error(error):
+        return (jsonify({
+            "success": False,
+            "error": 500,
+            "message": "Server Error"
+        }), 500)
+
     @app.errorhandler(400)
     def bad_request(error):
         return (jsonify({
