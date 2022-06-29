@@ -54,6 +54,15 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(len(data["categories"]), len(categories))
 
+    def test_categories_not_allowed_method(self):
+        post_res = self.client().post("/categories")
+        patch_res = self.client().patch("/categories")
+        del_res = self.client().delete("/categories")
+
+        self.assertEqual(post_res.status_code, 405)
+        self.assertEqual(patch_res.status_code, 405)
+        self.assertEqual(patch_res.status_code, 405)
+
     def test_get_questions(self):
         page = 1
         res = self.client().get(f"/questions?page={page}")
@@ -62,6 +71,20 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(len(data["categories"]), len(categories))
+
+    def test_get_questions_404(self):
+        page = 100
+        res = self.client().get(f"/questions?page={page}")
+
+        self.assertEqual(res.status_code, 404)
+
+    def test_questions_not_allowed_method(self):
+        page = 1
+        delete_res = self.client().delete(f"/questions?page={page}")
+        patch_res = self.client().patch(f"/questions?page={page}")
+
+        self.assertEqual(delete_res.status_code, 405)
+        self.assertEqual(patch_res.status_code, 405)
 
     def test_create_question(self):
         total_que = len(Question.query.all())

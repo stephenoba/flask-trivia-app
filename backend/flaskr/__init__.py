@@ -99,20 +99,24 @@ def create_app(test_config=None):
             next_page,
             previous_page
         ) = paginate(request, selection)
-        categories = serialize_categories(Category.query).get("categories")
 
-        data = {
-            "success": True,
-            "questions": questions,
-            "categories": categories,
-            "current_category": None,
-            "total_questions": len(Question.query.all()),
-            "total_pages": total_pages,
-            "current_page": current_page,
-            "previous_page": previous_page,
-            "next_page": next_page
-        }
-        return jsonify(data)
+        if questions:
+            categories = serialize_categories(Category.query).get("categories")
+
+            data = {
+                "success": True,
+                "questions": questions,
+                "categories": categories,
+                "current_category": None,
+                "total_questions": len(Question.query.all()),
+                "total_pages": total_pages,
+                "current_page": current_page,
+                "previous_page": previous_page,
+                "next_page": next_page
+            }
+            return jsonify(data)
+        else:
+            abort(404)
 
     """
     @TODO:
@@ -279,7 +283,6 @@ def create_app(test_config=None):
         try:
             previous_questions = body.get("previous_questions", None)
             quiz_category = body.get("quiz_category")["id"]
-            print(quiz_category)
             category = Category.query.filter(Category.id == quiz_category).one_or_none()
             if category:
                 questions_query = Question.query.filter(Question.category == category.id)
@@ -331,6 +334,17 @@ def create_app(test_config=None):
                 "message": "resource not found"
             }),
             404,
+        )
+
+    @app.errorhandler(405)
+    def method_not_allowed(error):
+        return (
+            jsonify({
+                "success": False,
+                "error": error.code,
+                "message": "Method not allowed"
+            }),
+            error.code,
         )
 
     @app.errorhandler(422)
