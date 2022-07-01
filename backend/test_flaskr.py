@@ -72,6 +72,13 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(len(data["categories"]), len(categories))
 
+    def test_get_questions_negative_page(self):
+        page = -10
+        res = self.client().get(f"/questions?page={page}")
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+
     def test_get_questions_404(self):
         page = 100
         res = self.client().get(f"/questions?page={page}")
@@ -106,13 +113,19 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 400)
 
-    def test_delete_new_question(self):
+    def test_delete_question(self):
         question_id = Question.query.all()[-1].id
         res = self.client().delete(f'/questions/{question_id}')
         data = json.loads(res.data)
 
         self.assertEqual(data['question_id'], question_id)
         self.assertEqual([], Question.query.filter(Question.id == question_id).all())
+
+    def test_delete_question_does_not_exist(self):
+        question_id = 100
+        res = self.client().delete(f'/questions/{question_id}')
+
+        self.assertEqual(res.status_code, 404)
 
     def test_get_question_by_category(self):
         category_id = 3
@@ -123,6 +136,12 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(len(questions), len(data["questions"]))
 
+    def test_get_question_by_category_nit_found(self):
+        category_id = 100
+        res = self.client().get(f"/categories/{category_id}/questions")
+
+        self.assertEqual(res.status_code, 404)
+
     def test_quizzes_no_prev_ques(self):
         category = Category.query.filter(Category.id == 3).one_or_none()
         self.quiz_query["quiz_category"] = {"id": category.id, "type": category.type}
@@ -131,6 +150,18 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data.get("question")["category"], category.id)
+
+    def test_quizzes_invalid_question_category_format(self):
+        self.quiz_query["quiz_category"] = 12
+        res = self.client().post('/quizzes', json=self.quiz_query)
+
+        self.assertEqual(res.status_code, 422)
+
+    def test_quizzes_invalid_previous_question_format(self):
+        self.quiz_query["previous_questions"] = 13
+        res = self.client().post('/quizzes', json=self.quiz_query)
+
+        self.assertEqual(res.status_code, 422)
 
     def test_quizzes_prev_ques(self):
         category = Category.query.filter(Category.id == 3).one_or_none()

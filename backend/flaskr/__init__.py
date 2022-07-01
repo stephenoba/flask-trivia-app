@@ -13,16 +13,23 @@ QUESTIONS_PER_PAGE = 10
 
 
 def paginate(request, selection):
-    len_total_items = len(selection)
+    len_total_items = len(selection.all())
     total_pages = round(len_total_items / 10)
     page = request.args.get("page", 1, type=int)
+
+    if page <= 0:
+        abort(404)
+
+    if len_total_items < QUESTIONS_PER_PAGE:
+        items = selection.all()
+    else:
+        offs = QUESTIONS_PER_PAGE * page
+        items = selection.offset(offs).all()[:QUESTIONS_PER_PAGE]
+
     next_page = page + 1 if page < total_pages else None
     previous_page = page - 1 if page > 1 else None
-    start = (page - 1) * QUESTIONS_PER_PAGE
-    end = start + QUESTIONS_PER_PAGE
-
-    items = [item.format() for item in selection]
-    current_items = items[start:end]
+    items = [item.format() for item in items]
+    current_items = items
 
     return current_items, total_pages, page, next_page,  previous_page
 
@@ -91,7 +98,7 @@ def create_app(test_config=None):
     """
     @app.route('/questions', methods=['GET'])
     def retrieve_questions():
-        selection = Question.query.order_by(Question.id).all()
+        selection = Question.query.order_by(Question.id)
         (
             questions,
             total_pages,
@@ -128,14 +135,15 @@ def create_app(test_config=None):
     @app.route('/questions/<int:question_id>', methods=['DELETE'])
     def delete_question(question_id):
         question = Question.query.filter(Question.id == question_id).one_or_none()
+        if not question:
+            abort(404)
 
         try:
-            if not question:
-                abort(404)
             question.delete()
             data = {"success": True, "question_id": question_id}
             return jsonify(data)
-        except:
+        except Exception as e:
+            print(e)
             abort(422)
 
     """
@@ -187,7 +195,7 @@ def create_app(test_config=None):
             if search:
                 selection = Question.query.order_by(Question.id).filter(
                     Question.question.ilike("%{}%".format(search))
-                ).all()
+                )
                 (
                     questions,
                     total_pages,
@@ -238,11 +246,12 @@ def create_app(test_config=None):
     """
     @app.route('/categories/<int:category_id>/questions', methods=['GET'])
     def get_category_questions(category_id):
+        category = Category.query.filter(Category.id == category_id).one_or_none()
+        if not category:
+            abort(404)
+
         try:
-            category = Category.query.filter(Category.id == category_id).one_or_none()
-            if not category:
-                abort(404)
-            selection = Question.query.filter(Question.category == category_id).all()
+            selection = Question.query.filter(Question.category == category_id)
             (
                 questions,
                 total_pages,
@@ -290,12 +299,12 @@ def create_app(test_config=None):
                 questions_query = Question.query.filter()
 
             if previous_questions:
-                next_question = questions_query.filter(Question.id.notin_(previous_questions)).first()
+                next_question = questions_query.filter(Question.id.notin_(previous_questions)).all()
             else:
-                next_question = questions_query.first()
+                next_question = questions_query.all()
             data = {
                 "success": True,
-                "question": next_question.format() if next_question else None
+                "question": random.choice(next_question).format() if next_question else None
             }
 
             return jsonify(data)
